@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: 'This template creates necessary CloudWatch Log Groups for use by other templates'
+
+Resources:
+  FlowLogsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: VPCFlowLogs
+      RetentionInDays: 90
+  
+  DeniedTrafficMetricFilter:
+    Type: 'AWS::Logs::MetricFilter'
+    Properties:
+      LogGroupName: 'VPCFlowLogs'
+      FilterPattern: '[version, account, eni, source, destination, srcport, destport, protocol, packets, bytes, windowstart, windowend, action="REJECT", flowlogstatus]'
+      MetricTransformations:
+        - MetricNamespace: VPCFlowLogs
+          MetricName: DeniedPackets
+          MetricValue: '1'
