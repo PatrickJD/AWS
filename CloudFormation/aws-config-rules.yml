@@ -1,0 +1,509 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  This template deploys AWS Config rules, including global resource rules in a main region, and regional based rules (for things like EC2).
+  Deployment of this template to China Regions, Govcloud, Bahrain and Osaka Local Region are not supported at this time within this template.
+
+Parameters:
+  DriftRoleARN:
+    Type: String
+    Description: 'The ARN of the role for Config to use when detecting CloudFormation Drift'
+  PrimaryRegion:
+    Type: String
+    Description: 'The main region where you use Config and record global resources, to set up rules that target things like IAM'
+
+Conditions:
+  MainRegion: !Equals [!Ref AWS::Region, !Ref PrimaryRegion]
+  ParisRegion: !Equals [!Ref AWS::Region, eu-west-3]
+  StockholmRegion: !Equals [!Ref AWS::Region, eu-north-1]
+  MilanRegion: !Equals [!Ref AWS::Region, eu-south-1]
+  SydneyRegion: !Equals [!Ref AWS::Region, ap-southeast-2]
+  CapeTownRegion: !Equals [!Ref AWS::Region, af-south-1]
+  VirginiaRegion: !Equals [!Ref AWS::Region, us-east-1]
+  BrasilRegion: !Equals [!Ref AWS::Region, sa-east-1]
+  ParisStockholmRegion: !Or [Condition: ParisRegion, Condition: StockholmRegion]
+  MilanCapeTownRegion: !Or [Condition: MilanRegion, Condition: CapeTownRegion]
+  MilanCapeTownSydneyRegion: !Or [Condition: MilanRegion, Condition: CapeTownRegion, Condition: SydneyRegion]
+  ExcludeParisStockholm: !Not [Condition: ParisStockholmRegion]
+  ExcludeMilanCapeTown: !Not [Condition: MilanCapeTownRegion]
+  ExcludeBrasil: !Not [Condition: BrasilRegion]
+  ExcludeMilanCapeTownSydney: !Not [Condition: MilanCapeTownSydneyRegion]
+
+Resources:
+  CloudTrailEnabledRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: MainRegion
+    Properties: 
+      ConfigRuleName: 'CloudTrailEnabled'
+      Description: 'Verifies that CloudTrail is enabled.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "CLOUD_TRAIL_ENABLED"
+
+  CloudTrailCWEnabledRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: MainRegion
+    Properties: 
+      ConfigRuleName: 'CloudTrailCWEnabled'
+      Description: 'Verifies that CloudTrail sends logs to CloudWatch.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED"
+
+  CloudTrailEncryptionEnabledRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: MainRegion
+    Properties: 
+      ConfigRuleName: 'CloudTrailEncryptionEnabled'
+      Description: 'Verifies that CloudTrail is encrypted.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "CLOUD_TRAIL_ENCRYPTION_ENABLED"
+
+  CloudTrailLogValidationEnabledRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: MainRegion
+    Properties: 
+      ConfigRuleName: 'CloudTrailLogValidationEnabled'
+      Description: 'Verifies that CloudTrail log validation is enabled.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED"
+
+  CloudTrailSecurityRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: MainRegion
+    Properties: 
+      ConfigRuleName: 'CloudTrailSecurityRule'
+      Description: 'Verifies at least one security focused CloudTrail is enabled.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "CLOUDTRAIL_SECURITY_TRAIL_ENABLED"
+
+  AccessKeysRotatedRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: MainRegion
+    Properties:
+      ConfigRuleName: 'AccessKeysRotated'
+      Description: 'Verifies that Access Keys are rotated every 90 days.'
+      InputParameters:
+        maxAccessKeyAge: 90
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "ACCESS_KEYS_ROTATED"
+
+  IAMGroupRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: MainRegion
+    Properties:
+      ConfigRuleName: 'IAMGroupRule'
+      Description: 'Verifies IAM groups have one at least one user.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "IAM_GROUP_HAS_USERS_CHECK"
+
+  IAMGroupMembershipRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: MainRegion
+    Properties:
+      ConfigRuleName: 'IAMGroupMembershipRule'
+      Description: 'Verifies IAM Groups have members.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "IAM_USER_GROUP_MEMBERSHIP_CHECK"
+
+  IAMUserMFARule: 
+    Type: AWS::Config::ConfigRule
+    Condition: MainRegion
+    Properties:
+      ConfigRuleName: 'IAMUserMFARule'
+      Description: 'Verifies IAM users have MFA.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "IAM_USER_MFA_ENABLED"
+
+  IAMUserNoPoliciesRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: MainRegion
+    Properties:
+      ConfigRuleName: 'IAMUserNoPoliciesRule'
+      Description: 'Verifies IAM users do not have direct attached policies.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "IAM_USER_NO_POLICIES_CHECK"
+
+  IAMUnusedCredentialRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: MainRegion
+    Properties:
+      ConfigRuleName: 'IAMUnusedCredentialRule'
+      Description: 'Verifies credentials are not stale.'
+      InputParameters:
+        maxCredentialUsageAge: 90
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "IAM_USER_UNUSED_CREDENTIALS_CHECK"
+
+  ALBHTTPRedirectRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'ALBHTTPRedirectRule'
+      Description: 'Verifies that all ALBs redirect HTTP to HTTPS.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "ALB_HTTP_TO_HTTPS_REDIRECTION_CHECK"
+
+  CloudFormationDriftRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeParisStockholm
+    Properties: 
+      ConfigRuleName: 'CFDriftDetectionRule'
+      Description: 'Checks CloudFormation templates for Drift.'
+      InputParameters:
+        cloudformationRoleArn: !Ref DriftRoleARN
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "CLOUDFORMATION_STACK_DRIFT_DETECTION_CHECK"
+
+  CloudFrontRootObjectRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: VirginiaRegion
+    Properties: 
+      ConfigRuleName: 'CloudFrontRootObjectConfiguredRule'
+      Description: 'Checks if an Amazon CloudFront distribution is configured to return a specific object that is the default root object.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "CLOUDFRONT_DEFAULT_ROOT_OBJECT_CONFIGURED"
+
+  CloudFrontOAIRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: VirginiaRegion
+    Properties: 
+      ConfigRuleName: 'CloudFrontOAIConfiguredRule'
+      Description: 'Checks that Amazon CloudFront distribution with Amazon S3 Origin type has Origin Access Identity (OAI) configured.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "CLOUDFRONT_ORIGIN_ACCESS_IDENTITY_ENABLED"
+
+  CloudFrontSNIRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: VirginiaRegion
+    Properties: 
+      ConfigRuleName: 'CloudFrontSNIConfiguredRule'
+      Description: 'Checks if Amazon CloudFront distributions are using a custom SSL certificate and are configured to use SNI to serve HTTPS requests.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "CLOUDFRONT_SNI_ENABLED"
+
+  CloudFrontHTTPSRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: VirginiaRegion
+    Properties: 
+      ConfigRuleName: 'CloudFrontHTTPSViewerRule'
+      Description: 'Checks whether your Amazon CloudFront distributions use HTTPS (directly or via a redirection).'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "CLOUDFRONT_VIEWER_POLICY_HTTPS"
+
+  EBSEncryptedByDefaultRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'EBSEncryptedByDefaultRule'
+      Description: 'Verifies EBS volumes are encrypted by default.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "EC2_EBS_ENCRYPTION_BY_DEFAULT"
+
+  EBSOptimizedInstanceRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'EBSOptimizedInstanceRule'
+      Description: 'Verifies EBS optimization is on when it can be on EC2.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "EBS_OPTIMIZED_INSTANCE"
+
+  EBSPublicSnapshotRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeMilanCapeTown
+    Properties: 
+      ConfigRuleName: 'EBSPublicSnapshotRule'
+      Description: 'Verifies EBS optimization is on when it can be on EC2.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK"
+
+  EC2DetailedMonitoringRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'EC2DetailedMonitoringRule'
+      Description: 'Checks for Detailed Monitoring on EC2 Instances'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "EC2_INSTANCE_DETAILED_MONITORING_ENABLED"
+
+  EC2ManagedBySSMRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'EC2ManagedBySSMRule'
+      Description: 'Verifies EC2 instances are managed by SSM'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "EC2_INSTANCE_MANAGED_BY_SSM"
+
+  EC2NoPublicIPRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'EC2NoPublicIPRule'
+      Description: 'Verifies EC2 instances are not associated with public IPs'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "EC2_INSTANCE_NO_PUBLIC_IP"
+
+  EC2InVPCRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeMilanCapeTown
+    Properties: 
+      ConfigRuleName: 'EC2InVPCRule'
+      Description: 'Verifies EC2 instances are in a VPC'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "INSTANCES_IN_VPC"
+
+  EC2ManagedInstanceComplianceRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeMilanCapeTown
+    Properties: 
+      ConfigRuleName: 'EC2ManagedInstanceComplianceRule'
+      Description: 'Verifies EC2 compliant with SSM'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "EC2_MANAGEDINSTANCE_ASSOCIATION_COMPLIANCE_STATUS_CHECK"
+
+  EC2ManagedInstancePatchComplianceRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeMilanCapeTown
+    Properties: 
+      ConfigRuleName: 'EC2ManagedInstancePatchComplianceRule'
+      Description: 'Verifies EC2 Patching is compliant with SSM'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK"
+
+  EC2StaleInstanceRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeMilanCapeTown
+    Properties: 
+      ConfigRuleName: 'EC2StaleInstanceRule'
+      Description: 'Verifies EC2 instances have not been stopped for more than 5 days.'
+      InputParameters:
+        AllowedDays: 5
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "EC2_STOPPED_INSTANCE"
+
+  EBSVolumeInUseRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'EBSVolumeInUseRule'
+      Description: 'Verifies EBS volumes are attached to an instance.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "EC2_VOLUME_INUSE_CHECK"
+
+  EIPAttachedRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeMilanCapeTown
+    Properties: 
+      ConfigRuleName: 'EIPAttachedRule'
+      Description: 'Verifies EIP is attached.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "EIP_ATTACHED"  
+
+  EC2MetadataV2Rule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeMilanCapeTown
+    Properties: 
+      ConfigRuleName: 'EC2MetadataV2Rule'
+      Description: 'Verifies metadata version 2 is used in EC2.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "EC2_IMDSV2_CHECK"
+
+  EBSEncryptedRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeMilanCapeTown
+    Properties: 
+      ConfigRuleName: 'EBSVolumesEncryptedRule'
+      Description: 'Checks EBS volumes to make sure they are encrypted.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "ENCRYPTED_VOLUMES"
+
+  RDSClusterDeletionProtectedRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeBrasil
+    Properties: 
+      ConfigRuleName: 'RDSClusterDeletionProtectedRule'
+      Description: 'Checks if an Amazon Relational Database Service (Amazon RDS) cluster has deletion protection enabled.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "RDS_CLUSTER_DELETION_PROTECTION_ENABLED"
+
+  RDSInstanceDeletionProtectedRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'RDSInstanceDeletionProtectedRule'
+      Description: 'Checks if an Amazon Relational Database Service (Amazon RDS) instance has deletion protection enabled.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "RDS_INSTANCE_DELETION_PROTECTION_ENABLED"
+
+  RDSIAMAuthRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'RDSIAMAuthRule'
+      Description: 'Checks if an Amazon Relational Database Service (Amazon RDS) instance has AWS Identity and Access Management (IAM) authentication enabled.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "RDS_INSTANCE_IAM_AUTHENTICATION_ENABLED"
+
+  RDSLoggingEnabledRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeMilanCapeTown
+    Properties: 
+      ConfigRuleName: 'RDSLoggingEnabledRule'
+      Description: 'Checks that respective logs of Amazon Relational Database Service (Amazon RDS) are enabled.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "RDS_LOGGING_ENABLED"
+
+  RDSSnapshotEncryptedRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'RDSSnapshotEncryptedRule'
+      Description: 'Checks whether Amazon Relational Database Service (Amazon RDS) DB snapshots are encrypted.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "RDS_LOGGING_ENABLED"
+
+  RDSPublicAccessRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'RDSPublicAccessRule'
+      Description: 'Check whether the Amazon Relational Database Service instances are not publicly accessible.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "RDS_INSTANCE_PUBLIC_ACCESS_CHECK"
+
+  RDSMultiAZSupportRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'RDSMultiAZSupportRule'
+      Description: 'Checks whether high availability is enabled for your RDS DB instances.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "RDS_MULTI_AZ_SUPPORT"
+
+  RDSPublicSnapshotRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeMilanCapeTown
+    Properties: 
+      ConfigRuleName: 'RDSPublicSnapshotRule'
+      Description: 'Checks if Amazon Relational Database Service (Amazon RDS) snapshots are public.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "RDS_SNAPSHOTS_PUBLIC_PROHIBITED"
+
+  RedshiftBackupEnabledRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeMilanCapeTownSydney
+    Properties: 
+      ConfigRuleName: 'RedshiftBackupEnabledRule'
+      Description: 'Checks that Amazon Redshift automated snapshots are enabled for clusters.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "REDSHIFT_BACKUP_ENABLED"
+
+  RedshiftTLSRequiredRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'RedshiftTLSRequiredRule'
+      Description: 'Checks whether Amazon Redshift clusters require TLS/SSL encryption to connect to SQL clients.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "REDSHIFT_REQUIRE_TLS_SSL"
+
+  RestrictedSSHRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeMilanCapeTown
+    Properties: 
+      ConfigRuleName: 'RestrictedSSHRule'
+      Description: 'Checks whether the incoming SSH traffic for the security groups is accessible.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "INCOMING_SSH_DISABLED"
+
+  RestrictedPortsRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeMilanCapeTown
+    Properties: 
+      ConfigRuleName: 'RestrictedPortsRule'
+      Description: 'Checks whether the incoming ports for the security groups is accessible.'
+      InputParameters:
+        blockedPort1: '20'
+        blockedPort2: '21'
+        blockedPort3: '3389'
+        blockedPort4: '3306'
+        blockedPort5: '4333'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "RESTRICTED_INCOMING_TRAFFIC"
+
+  S3DefaultEncryptionRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'S3DefaultEncryptionRule'
+      Description: 'Checks whether the Amazon Simple Storage Service (Amazon S3) buckets are encrypted with AWS Key Management Service (AWS KMS).'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "S3_DEFAULT_ENCRYPTION_KMS"
+
+  S3PublicAccessBlocksRule: 
+    Type: AWS::Config::ConfigRule
+    Condition: ExcludeMilanCapeTown
+    Properties: 
+      ConfigRuleName: 'S3PublicAccessBlocksRule'
+      Description: 'Checks whether the required public access block settings are configured from account level.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS"
+
+  S3SSSLOnlyRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'S3SSSLOnlyRule'
+      Description: 'Checks whether S3 buckets have policies that require requests to use Secure Socket Layer (SSL).'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "S3_BUCKET_SSL_REQUESTS_ONLY"
+
+  VPCDefaultSecurityRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'VPCDefaultSecurityRule'
+      Description: 'Checks that the default security group of any Amazon Virtual Private Cloud (VPC) does not allow inbound or outbound traffic.'
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
+
+  VPCFlowLogsRule: 
+    Type: AWS::Config::ConfigRule
+    Properties: 
+      ConfigRuleName: 'VPCFlowLogsRule'
+      Description: 'Checks whether Amazon Virtual Private Cloud flow logs are found and enabled for Amazon VPC.'
+      InputParameters:
+        trafficType: ALL
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "VPC_FLOW_LOGS_ENABLED"

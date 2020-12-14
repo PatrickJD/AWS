@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  This template deployed configuration recorders to all regions.
+  Additionally, an aggregator is set up in the main region selected. 
+
+Parameters:
+  ConfigS3Bucket:
+    Type: String
+    Description: 'The S3 Bucket that the Config delivery channel will use.'
+
+  ConfigRole:
+    Type: String
+    Description: 'The IAM Config Service Linked Role ARN for AWS Config to use.'
+
+  PrimaryRegion:
+    Type: String
+    Default: us-east-1
+    Description: 'The primary region where you use Config and record global resources. us-east-1 is recommended.'
+  
+  PrimaryAccount:
+    Type: String
+    Description: 'The primary AWS account to authorize for Configuration Aggregator'
+
+Conditions:
+  MainRegion: !Equals [!Ref AWS::Region, !Ref PrimaryRegion]
+  NotMainRegion: !Not [Condition: MainRegion]
+
+Resources:
+  ConfigRecorderMain:
+    Type: AWS::Config::ConfigurationRecorder
+    Condition: MainRegion
+    Properties: 
+      Name: !Sub 'AWSConfig-${AWS::Region}'
+      RecordingGroup: 
+        AllSupported: True
+        IncludeGlobalResourceTypes: True
+      RoleARN: !Ref ConfigRole
+
+  ConfigRecorderSub:
+    Type: AWS::Config::ConfigurationRecorder
+    Condition: NotMainRegion
+    Properties: 
+      Name: !Sub 'AWSConfig-${AWS::Region}'
+      RecordingGroup: 
+        AllSupported: True
+        IncludeGlobalResourceTypes: False
+      RoleARN: !Ref ConfigRole
+
+  DeliveryChannel: 
+    Type: AWS::Config::DeliveryChannel
+    Properties: 
+      ConfigSnapshotDeliveryProperties: 
+        DeliveryFrequency: "Six_Hours"
+      S3BucketName: !Ref ConfigS3Bucket
+      
+  AggregationAuthorization:
+    Type: AWS::Config::AggregationAuthorization
+    Properties:
+      AuthorizedAccountId: !Ref PrimaryAccount
+      AuthorizedAwsRegion: !Ref PrimaryRegion
+
+  ConfigurationAggregator:
+    Type: 'AWS::Config::ConfigurationAggregator'
+    Condition: MainRegion
+    Properties:
+      AccountAggregationSources:
+        - AccountIds:
+            - !Ref PrimaryAccount
+          AllAwsRegions: True
+      ConfigurationAggregatorName: ConfigAggregator
