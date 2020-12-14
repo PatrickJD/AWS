@@ -1,7 +1,7 @@
 # AWS Automation
 Welcome 👋👩‍💻👨‍💻
 
-The intent of this repository is to create flexible CloudFormation templates & automation scripts to improve speed and quality of the deployment of AWS resources. This is a public repository, so please do **NOT** include any aws account specific information, secrets, KMS/SSH keys or any sensitive info.
+The intent of this repository is to create flexible CloudFormation templates & automation scripts to improve speed and quality of the deployment of AWS resources. This is a public repository, so please do **NOT** include any aws account specific information, secrets, KMS/SSH keys or any sensitive info. 
 
 Please read our [Code of Conduct](CODE_OF_CONDUCT.md)
 
