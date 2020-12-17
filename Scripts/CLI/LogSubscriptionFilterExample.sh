@@ -1,0 +1,1 @@
+aws logs put-subscription-filter --log-group-name "Log Group Name" --filter-name "Filter Name" --filter-pattern "Filter Pattern" --destination-arn "ARN" --role-arn "ARN"
