@@ -479,15 +479,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: "S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS"
 
-  S3SSSLOnlyRule: 
-    Type: AWS::Config::ConfigRule
-    Properties: 
-      ConfigRuleName: 'S3SSSLOnlyRule'
-      Description: 'Checks whether S3 buckets have policies that require requests to use Secure Socket Layer (SSL).'
-      Source: 
-        Owner: AWS
-        SourceIdentifier: "S3_BUCKET_SSL_REQUESTS_ONLY"
-
   VPCDefaultSecurityRule: 
     Type: AWS::Config::ConfigRule
     Properties: 
