@@ -49,16 +49,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: "CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED"
 
-  CloudTrailEncryptionEnabledRule: 
-    Type: AWS::Config::ConfigRule
-    Condition: MainRegion
-    Properties: 
-      ConfigRuleName: 'CloudTrailEncryptionEnabled'
-      Description: 'Verifies that CloudTrail is encrypted.'
-      Source: 
-        Owner: AWS
-        SourceIdentifier: "CLOUD_TRAIL_ENCRYPTION_ENABLED"
-
   CloudTrailLogValidationEnabledRule: 
     Type: AWS::Config::ConfigRule
     Condition: MainRegion
