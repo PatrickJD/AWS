@@ -10,7 +10,6 @@ dynamodb_table = dynamodb.Table(DYNAMODB_TABLE)
 
 def lambda_handler(event, context):
     for record in event['Records']:
-        bucket = record['s3']['bucket']['name']
         key = record['s3']['object']['key']
 
         dynamodb_table.delete_item(Key={
