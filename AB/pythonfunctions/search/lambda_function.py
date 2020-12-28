@@ -29,9 +29,11 @@ def lambda_handler(event, context):
     query = {
         "size": 25,
         "query": {
-            "multi_match": {
-                "query": event['queryStringParameters']['q'],
-                "fields": ["DetectedObjects.Labels.Name", "DetectedFaces.FaceDetails.Gender.Value", "DetectedText.TextDetections.DetectedText"]
+            "query_string": {
+                "query": "*" + event['queryStringParameters']['q'] + "*",
+                "fields": ["DetectedObjects.Labels.Name", "DetectedFaces.FaceDetails.Gender.Value", "DetectedText.TextDetections.DetectedText"],
+                "analyze_wildcard" : true,
+                "allow_leading_wildcard": true
             }
         }
     }
