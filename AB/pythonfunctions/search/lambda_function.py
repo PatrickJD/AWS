@@ -31,9 +31,7 @@ def lambda_handler(event, context):
         "query": {
             "query_string": {
                 "query": "*" + event['queryStringParameters']['q'] + "*",
-                "fields": ["DetectedObjects.Labels.Name", "DetectedFaces.FaceDetails.Gender.Value", "DetectedText.TextDetections.DetectedText"],
-                "analyze_wildcard" : true,
-                "allow_leading_wildcard": true
+                "fields": ["DetectedObjects.Labels.Name", "DetectedFaces.FaceDetails.Gender.Value", "DetectedText.TextDetections.DetectedText"]
             }
         }
     }
