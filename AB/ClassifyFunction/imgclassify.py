@@ -53,8 +53,8 @@ def lambda_handler(event, context):
         facedetectionsload = json.loads(json.dumps(facedetections), parse_float=Decimal)
 
         dynamodb_table.put_item(Item={
-            "image-id": key,
-            "detected-objects": objectdetectionsload,
-            "detected-text": textdetectionsload,
-            "detected-faces": facedetectionsload,
+            "ImageId": key,
+            "DetectedObjects": objectdetectionsload,
+            "DetectedText": textdetectionsload,
+            "DetectedFaces": facedetectionsload,
         })
