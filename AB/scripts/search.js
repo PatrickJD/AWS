@@ -19,7 +19,7 @@ async function search() {
   loadingdiv.show();
   // Get the query from the user
   let query = searchbox.val();
-  // Only run a query if the string contains at least three characters
+  // Only run a query if the string contains at least three characters.
   if (query.length > 2) {
     // Make the HTTP request with the query as a parameter and wait for the JSON results
     let response = await $.get('https://4dle989xuj.execute-api.us-east-1.amazonaws.com/ab-search-prod', { q: query, size: 25 }, 'json');
