@@ -31,7 +31,7 @@ def lambda_handler(event, context):
         "query": {
             "query_string": {
                 "query": "*" + event['queryStringParameters']['q'] + "*",
-                "fields": ["DetectedObjects.Labels.Name", "DetectedFaces.FaceDetails.Gender.Value", "DetectedText.TextDetections.DetectedText"]
+                "fields": ["DetectedObjects.Labels.Name", "DetectedText.TextDetections.DetectedText"]
             }
         }
     }

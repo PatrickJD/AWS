@@ -39,20 +39,6 @@ def lambda_handler(event, context):
 
         textdetectionsload = json.loads(json.dumps(textdetections), parse_float=Decimal)
 
-        facedetections = rekognition.detect_faces(
-            Image={
-                "S3Object": {
-                    "Bucket": bucket,
-                    "Name": key,
-                }
-            },
-            Attributes=[
-                'ALL',
-            ]
-        )
-
-        facedetectionsload = json.loads(json.dumps(facedetections), parse_float=Decimal)
-
         imgurl = cfdistro+key
 
         dynamodb_table.put_item(Item={
@@ -60,5 +46,5 @@ def lambda_handler(event, context):
             "ImageURL": imgurl,
             "DetectedObjects": objectdetectionsload,
             "DetectedText": textdetectionsload,
-            "DetectedFaces": facedetectionsload,
+            "License": "Public"
         })
