@@ -3,6 +3,7 @@ from decimal import Decimal
 import boto3
 import os
 import json
+import datetime
 
 DYNAMODB_TABLE = os.environ.get("DYNAMODB_TABLE", None)
 cfdistro = os.environ.get("CLOUDFRONT_DISTRO", None)
@@ -40,9 +41,11 @@ def lambda_handler(event, context):
         textdetectionsload = json.loads(json.dumps(textdetections), parse_float=Decimal)
 
         imgurl = cfdistro+key
+        date = datetime.datetime.today()
 
         dynamodb_table.put_item(Item={
             "ImageId": key,
+            "LastUpdated" : date,
             "ImageURL": imgurl,
             "DetectedObjects": objectdetectionsload,
             "DetectedText": textdetectionsload,
