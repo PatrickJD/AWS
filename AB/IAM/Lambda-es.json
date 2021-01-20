@@ -1,0 +1,34 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "es:DescribeReservedElasticsearchInstanceOfferings",
+                "es:ListElasticsearchInstanceTypeDetails",
+                "es:CreateElasticsearchServiceRole",
+                "es:RejectInboundCrossClusterSearchConnection",
+                "es:PurchaseReservedElasticsearchInstanceOffering",
+                "es:DeleteElasticsearchServiceRole",
+                "es:AcceptInboundCrossClusterSearchConnection",
+                "es:DescribeInboundCrossClusterSearchConnections",
+                "es:DescribeReservedElasticsearchInstances",
+                "es:ListDomainNames",
+                "es:DeleteInboundCrossClusterSearchConnection",
+                "es:ListElasticsearchInstanceTypes",
+                "es:DescribeOutboundCrossClusterSearchConnections",
+                "es:ListElasticsearchVersions",
+                "es:DescribeElasticsearchInstanceTypeLimits",
+                "es:DeleteOutboundCrossClusterSearchConnection"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "es:*",
+            "Resource": "*"
+        }
+    ]
+}

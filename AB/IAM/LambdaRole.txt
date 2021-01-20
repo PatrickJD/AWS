@@ -1,0 +1,5 @@
+RekognitionFullAccess
+AWSLambdaBasicExecutionPolicy
+Lambda-S3-Policy (Custom)
+Lambda-DynamoDB-Access (Custom)
+Lambda-ES-Policy (Custom)
