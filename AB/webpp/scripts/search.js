@@ -22,7 +22,7 @@ async function search() {
   // Only run a query if the string contains at least three characters.
   if (query.length > 2) {
     // Make the HTTP request with the query as a parameter and wait for the JSON results
-    let response = await $.get('https://4dle989xuj.execute-api.us-east-1.amazonaws.com/ab-search-prod', { q: query, size: 25 }, 'json');
+    let response = await $.get('https://xylnjdcefl.execute-api.us-east-1.amazonaws.com/imagelibrary-search', { q: query, size: 25 }, 'json');
     // Get the part of the JSON response that we care about
     let results = response['hits']['hits'];
     if (results.length > 0) {

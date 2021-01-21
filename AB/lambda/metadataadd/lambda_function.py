@@ -4,6 +4,7 @@ import boto3
 import os
 import json
 import time
+import datetime
 
 DYNAMODB_TABLE = os.environ.get("DYNAMODB_TABLE", None)
 cfdistro = os.environ.get("CLOUDFRONT_DISTRO", None)
@@ -41,13 +42,17 @@ def lambda_handler(event, context):
         textdetectionsload = json.loads(json.dumps(textdetections), parse_float=Decimal)
 
         imgurl = cfdistro+key
-        unixtime = time.time()
+        unixtime = time.time_ns()
+        dt = time.strftime("%Z - %Y/%m/%d, %H:%M:%S", time.gmtime(time.time()))
 
         dynamodb_table.put_item(Item={
             "ImageId": key,
             "LastUpdated" : unixtime,
+            "LastUpdatedTimestamp" : dt,
             "ImageURL": imgurl,
             "DetectedObjects": objectdetectionsload,
             "DetectedText": textdetectionsload,
-            "License": "Public"
+            "ManualTags": "",
+            "License": "Public",
+            "Version": "1.0"
         })
