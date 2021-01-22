@@ -25,7 +25,7 @@ def lambda_handler(event, context):
                 }
             },
             MaxLabels=10,
-            MinConfidence=96,
+            MinConfidence=90,
         )
         
         objectdetectionsload = json.loads(json.dumps(objectdetections), parse_float=Decimal)
@@ -54,5 +54,6 @@ def lambda_handler(event, context):
             "DetectedText": textdetectionsload,
             "ManualTags": "",
             "License": "Public",
+            "ObjLock": "Open",
             "Version": "1.0"
         })
