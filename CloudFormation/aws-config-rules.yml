@@ -496,7 +496,6 @@ Resources:
       Description: 'Checks for required tags on AWS resources.'
       InputParameters:
         tag1Key: CostCenter
-        tag2Key: Name
       Source:
         Owner: AWS
         SourceIdentifier: "REQUIRED_TAGS"
