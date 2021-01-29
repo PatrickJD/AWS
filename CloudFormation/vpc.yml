@@ -33,6 +33,16 @@ Parameters:
     Description: Please enter the IP range (CIDR notation) for the private subnet in the second Availability Zone
     Type: String
     Default: 10.192.21.0/24
+  
+  FlowLogsRole:
+    Description: Please enter the flow logs role ARN to be used to ship logs to CloudWatch
+    Type: String
+    Default: arn:aws:iam::1234567890:role/ROLENAME
+
+  LogGroup:
+    Description: Please enter the name of the Log Group in CloudWatch to deliver logs to
+    Type: String
+    Default: LogGroupName
 
 Resources:
   VPC:
@@ -203,6 +213,16 @@ Resources:
       GroupName: "no-ingress-sg"
       GroupDescription: "Security group with no ingress rule"
       VpcId: !Ref VPC
+  
+  FlowLog:
+    Type: AWS::EC2::FlowLog
+    Properties:
+      DeliverLogsPermissionArn: !Ref FlowLogsRole
+      LogGroupName: !Ref LogGroup
+      MaxAggregationInterval: 60
+      ResourceId: !Ref VPC
+      ResourceType: VPC
+      TrafficType: ALL
 
 Outputs:
   VPC:
