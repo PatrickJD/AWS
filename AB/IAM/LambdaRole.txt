@@ -1,0 +1,46 @@
+RekognitionFullAccess
+AWSLambdaBasicExecutionPolicy
+Lambda-S3-Policy (Custom)
+Lambda-DynamoDB-Access (Custom)
+Lambda-ES-Policy (Custom)
+
+
+
+full-access
+unlimited
+*
+—
+arn:aws:iam::382306466249:role/AB-LambdaRole
+arn:aws:iam::382306466249:role/Admin
+
+
+arn:aws:iam::382306466249:role/service-role/CognitoAccessForAmazonES
+arn:aws:iam::382306466249:role/Cognito_abAuth_Role
+
+
+DYNAMODB_TABLE = table name (not ARN)
+ES_ENDPOINT	= endpoint URL
+SEARCH_ENDPOINT = https://search-img-searchindex-mm7yj7x2jmjs354j3dbkxtwbaa.us-east-1.es.amazonaws.com/ab-img-metadata/_search
+CLOUDFRONT_DISTRO = distro URL with trailing slash
+
+
+arn:aws:iam::187800548053:role/octank-imagelibrary-lambda-role
+
+CF Distro: 
+d2qmy9ysg5or4z.cloudfront.net
+arn:aws:cloudfront::187800548053:distribution/E3VM5NIJHG8O8X
+
+DynamoDB:
+octank-imagelibrary-metadata-poc
+arn:aws:dynamodb:us-east-1:187800548053:table/octank-imagelibrary-metadata-poc
+arn:aws:dynamodb:us-east-1:187800548053:table/octank-imagelibrary-metadata-poc/stream/2021-01-20T17:42:52.378
+
+S3:
+octank-imagelibrary-img-useast-poc
+arn:aws:s3:::octank-imagelibrary-img-useast-poc
+
+ES:
+octank-imagelibrary-index
+arn:aws:es:us-east-1:187800548053:domain/octank-imagelibrary-index
+https://search-octank-imagelibrary-index-dnzzrxygcqwihyfxwejgrcmfq4.us-east-1.es.amazonaws.com
+https://search-octank-imagelibrary-index-dnzzrxygcqwihyfxwejgrcmfq4.us-east-1.es.amazonaws.com/_plugin/kibana/
