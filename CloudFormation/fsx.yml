@@ -39,26 +39,17 @@ Resources:
   AllowFileServer:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub ${EnvironmentName}-FileServerAccess-SG
+      GroupName: !Sub ${EnvironmentName}-fileServerAccess-sg
       GroupDescription: Allows access to the FSx Fileserver
       VpcId: !Ref VPC
-      SecurityGroupEgress:
-        - CidrIp: 0.0.0.0/0
-          IpProtocol: TCP
-          FromPort: 445
-          ToPort: 445
-        - CidrIp: 0.0.0.0/0
-          IpProtocol: TCP
-          FromPort: 5985
-          ToPort: 5985
       Tags:
         - Key: Name
-          Value: !Sub ${EnvironmentName}-FileServerAccess-SG
+          Value: !Sub ${EnvironmentName}-fileServeraccess-sg
   
   FSxSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub ${EnvironmentName}-FSx-SG
+      GroupName: !Sub ${EnvironmentName}-fsx-sg
       GroupDescription: Access for the FSx FileSystem
       VpcId: !Ref VPC
       SecurityGroupIngress:
@@ -133,7 +124,7 @@ Resources:
           ToPort: 53
       Tags:
         - Key: Name
-          Value: !Sub ${EnvironmentName} FSx-SG
+          Value: !Sub ${EnvironmentName}-fsx-sg
   
   FileServer:
     Type: AWS::FSx::FileSystem
@@ -155,3 +146,6 @@ Resources:
         PreferredSubnetId: !Ref Subnet1
         ThroughputCapacity: !Ref Throughput
         WeeklyMaintenanceStartTime: '7:06:00'
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-file

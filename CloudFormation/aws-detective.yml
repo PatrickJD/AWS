@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  This template deploys Detective to all supported regions when deployed as a StackSet.
+
+Resources:
+  Detective:
+    Type: AWS::Detective::Graph
+    Properties: {}
