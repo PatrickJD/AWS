@@ -1,0 +1,151 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description:  This template deploys FSx to an environment running AD or AD Connector
+
+Parameters:
+  EnvironmentName:
+    Description: An environment name that is prefixed to resource names.
+    Type: String
+
+  VPC:
+    Description: The VPC to deploy FSx into.
+    Type: AWS::EC2::VPC::Id
+
+  Subnet1:
+    Description: The first subnet for multi-az.
+    Type: AWS::EC2::Subnet::Id
+
+  Subnet2:
+    Description: The second subnet for multi-az.
+    Type: AWS::EC2::Subnet::Id
+
+  ADSecurityGroup:
+    Description: The security group of the directory service to allow access from FSx.
+    Type: AWS::EC2::SecurityGroup::Id
+  
+  StorageCapacityGigs:
+    Description: The amount of storage to provision in gigabytes.
+    Type: Number
+
+  ActiveDirID:
+    Description: The ID of the managed active directory to join FSx to.
+    Type: String
+  
+  Throughput:
+    Description: The throughput of the file system in MB/s.
+    Type: Number
+    Default: 16
+
+Resources:
+  AllowFileServer:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${EnvironmentName}-fileServerAccess-sg
+      GroupDescription: Allows access to the FSx Fileserver
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-fileServeraccess-sg
+  
+  FSxSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${EnvironmentName}-fsx-sg
+      GroupDescription: Access for the FSx FileSystem
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - SourceSecurityGroupId: !Ref AllowFileServer
+          IpProtocol: TCP
+          FromPort: 445
+          ToPort: 445
+        - SourceSecurityGroupId: !Ref AllowFileServer
+          IpProtocol: TCP
+          FromPort: 5985
+          ToPort: 5985
+      SecurityGroupEgress:
+        - DestinationSecurityGroupId: !Ref ADSecurityGroup
+          IpProtocol: TCP
+          FromPort: 88
+          ToPort: 88
+        - DestinationSecurityGroupId: !Ref ADSecurityGroup
+          IpProtocol: TCP
+          FromPort: 135
+          ToPort: 135
+        - DestinationSecurityGroupId: !Ref ADSecurityGroup
+          IpProtocol: TCP
+          FromPort: 389
+          ToPort: 389
+        - DestinationSecurityGroupId: !Ref ADSecurityGroup
+          IpProtocol: TCP
+          FromPort: 445
+          ToPort: 445
+        - DestinationSecurityGroupId: !Ref ADSecurityGroup
+          IpProtocol: TCP
+          FromPort: 464
+          ToPort: 464
+        - DestinationSecurityGroupId: !Ref ADSecurityGroup
+          IpProtocol: TCP
+          FromPort: 636
+          ToPort: 636
+        - DestinationSecurityGroupId: !Ref ADSecurityGroup
+          IpProtocol: TCP
+          FromPort: 3268
+          ToPort: 3269
+        - DestinationSecurityGroupId: !Ref ADSecurityGroup
+          IpProtocol: TCP
+          FromPort: 9389
+          ToPort: 9389
+        - DestinationSecurityGroupId: !Ref ADSecurityGroup
+          IpProtocol: TCP
+          FromPort: 49152
+          ToPort: 65535
+        - DestinationSecurityGroupId: !Ref ADSecurityGroup
+          IpProtocol: UDP
+          FromPort: 88
+          ToPort: 88
+        - DestinationSecurityGroupId: !Ref ADSecurityGroup
+          IpProtocol: UDP
+          FromPort: 123
+          ToPort: 123
+        - DestinationSecurityGroupId: !Ref ADSecurityGroup
+          IpProtocol: UDP
+          FromPort: 389
+          ToPort: 389
+        - DestinationSecurityGroupId: !Ref ADSecurityGroup
+          IpProtocol: UDP
+          FromPort: 464
+          ToPort: 464
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: TCP
+          FromPort: 53
+          ToPort: 53
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: UDP
+          FromPort: 53
+          ToPort: 53
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-fsx-sg
+  
+  FileServer:
+    Type: AWS::FSx::FileSystem
+    Properties:
+      FileSystemType: WINDOWS
+      StorageType: SSD
+      StorageCapacity: !Ref StorageCapacityGigs
+      SubnetIds:
+        - !Ref Subnet1
+        - !Ref Subnet2
+      SecurityGroupIds:
+        - !Ref FSxSG
+      WindowsConfiguration:
+        ActiveDirectoryId: !Ref ActiveDirID
+        AutomaticBackupRetentionDays: 7
+        CopyTagsToBackups: True
+        DailyAutomaticBackupStartTime: '05:00'
+        DeploymentType: MULTI_AZ_1
+        PreferredSubnetId: !Ref Subnet1
+        ThroughputCapacity: !Ref Throughput
+        WeeklyMaintenanceStartTime: '7:06:00'
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-file

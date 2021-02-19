@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  This template deploys GuardDuty to all supported regions when deployed as a StackSet.
+
+Resources:
+  GDDetector:
+    Type: AWS::GuardDuty::Detector
+    Properties: 
+      DataSources: 
+        S3Logs:
+          Enable: True
+      Enable: True
+      FindingPublishingFrequency: FIFTEEN_MINUTES

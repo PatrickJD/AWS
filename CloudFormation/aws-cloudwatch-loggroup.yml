@@ -17,3 +17,4 @@ Resources:
         - MetricNamespace: VPCFlowLogs
           MetricName: DeniedPackets
           MetricValue: '1'
+          DefaultValue: 0

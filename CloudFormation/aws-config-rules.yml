@@ -434,22 +434,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: "INCOMING_SSH_DISABLED"
 
-  RestrictedPortsRule: 
-    Type: AWS::Config::ConfigRule
-    Condition: ExcludeMilanCapeTown
-    Properties: 
-      ConfigRuleName: 'RestrictedPortsRule'
-      Description: 'Checks whether the incoming ports for the security groups is accessible.'
-      InputParameters:
-        blockedPort1: '20'
-        blockedPort2: '21'
-        blockedPort3: '3389'
-        blockedPort4: '3306'
-        blockedPort5: '4333'
-      Source: 
-        Owner: AWS
-        SourceIdentifier: "RESTRICTED_INCOMING_TRAFFIC"
-
   S3DefaultEncryptionRule: 
     Type: AWS::Config::ConfigRule
     Properties: 
@@ -488,3 +472,14 @@ Resources:
       Source: 
         Owner: AWS
         SourceIdentifier: "VPC_FLOW_LOGS_ENABLED"
+  
+  RequiredTags:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: 'RequiredTags'
+      Description: 'Checks for required tags on AWS resources.'
+      InputParameters:
+        tag1Key: CostCenter
+      Source:
+        Owner: AWS
+        SourceIdentifier: "REQUIRED_TAGS"
