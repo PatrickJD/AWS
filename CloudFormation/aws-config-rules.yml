@@ -472,14 +472,3 @@ Resources:
       Source: 
         Owner: AWS
         SourceIdentifier: "VPC_FLOW_LOGS_ENABLED"
-  
-  RequiredTags:
-    Type: AWS::Config::ConfigRule
-    Properties:
-      ConfigRuleName: 'RequiredTags'
-      Description: 'Checks for required tags on AWS resources.'
-      InputParameters:
-        tag1Key: CostCenter
-      Source:
-        Owner: AWS
-        SourceIdentifier: "REQUIRED_TAGS"
